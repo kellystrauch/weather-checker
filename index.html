@@ -25,13 +25,13 @@
 
 <body>
 
-	<div class="container">
+	<div class="mycontainer">
 
 		<h2>
 			What's the weather like?
 		</h2>
 		...for zip code 
-		<input id="zip" value="72701">
+		<input id="zip" value="12345">
 		<button type="button" class="btn btn-dark btn-sm" onclick="updateZip()">Update</button>
 
 		<hr>
@@ -84,10 +84,13 @@
 
 			let fixedDescription = fixDescriptionGrammar(condition, description);
 			let roundedTemp = Math.round(temp);
-			let icon = getIcon(condition);
+			let iconAndBackground = getIconAndBackground(condition);
+			let icon = iconAndBackground[0];
+			let background = iconAndBackground[1];
 			
 			addSummaryToPage(roundedTemp, fixedDescription, city);
 			addIconToPage(icon);
+			setBackground(background);
 		}
 
 		function fixDescriptionGrammar(condition, descrip){
@@ -112,31 +115,50 @@
 			return descrip;
 		}
 
-		function getIcon(condition){
+		function getIconAndBackground(condition){
 			let icon;
+			let background;
 			switch( condition.toLowerCase() ){
 				case "thunderstorm":
 					icon = "fa-bolt";
+					background = "https://images.unsplash.com/photo-1509401934319-cb35b87bf39e";
 					break;
 				case "rain":
 					icon = "fa-umbrella";
+					background = "https://images.unsplash.com/photo-1486016006115-74a41448aea2";
 					break;
 				case "drizzle":
 					icon = "fa-umbrella";
+					background = "https://images.unsplash.com/photo-1486016006115-74a41448aea2";
 					break;
 				case "snow":
 					icon = "fa-snowflake-o";
+					background = "https://images.unsplash.com/photo-1457269449834-928af64c684d";
 					break;
 				case "clear":
 					icon = "fa-sun-o";
+					background = "https://images.unsplash.com/photo-1546462914-01ce6f5ee503";
 					break;
 				case "clouds":
 					icon = "fa-cloud";
+					background = "https://images.unsplash.com/photo-1489610368847-c0d1dea29b4a";
 					break;
 				default:
-					icon = "fa-align-center"; //closest I can get for fog in free FA icon set
+					icon = "fa-align-center"; //standing in for an actual fog icon
+					background = "https://images.unsplash.com/photo-1430921688227-2c59c6489072";
+					//this doesn't cover all other possibilities (e.g. tornado, volcanic ash, sand),
+					//but it covers many of them (fog, mist, smoke, haze)
 			}
-			return icon;
+			let iconAndBackground = [];
+			iconAndBackground.push(icon);
+			iconAndBackground.push(background);
+			return iconAndBackground;
+		}
+
+		function addSummaryToPage(temp, fixedCondition, city){
+			let summaryContainer = document.getElementById("summary-container");
+			let summary = "It's " + temp + "&#176;" + " with " + fixedCondition + " in " + city + ".";
+			summaryContainer.innerHTML = summary;
 		}
 
 		function addIconToPage(icon){
@@ -148,10 +170,8 @@
 			iconContainer.appendChild(iconElement);
 		}
 
-		function addSummaryToPage(temp, fixedCondition, city){
-			let summaryContainer = document.getElementById("summary-container");
-			let summary = "It's " + temp + "&#176;" + " with " + fixedCondition + " in " + city + ".";
-			summaryContainer.innerHTML = summary;
+		function setBackground(background){
+			document.body.style.backgroundImage = "url('" + background + "')";
 		}
 
 		updateZip();
