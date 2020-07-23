@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<!-- Required meta tags for Bootstrap -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>
+		Weather Checker
+	</title>
+
+	<!-- Import Google Font -->
+	<link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+
+	<!-- Import FontAwesome CDN -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+	<!-- CSS for this site -->
+	<link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+
+	<div class="container">
+
+		<h2>
+			What's the weather like?
+		</h2>
+		...for zip code 
+		<input id="zip" value="72701">
+		<button type="button" class="btn btn-dark btn-sm" onclick="updateZip()">Update</button>
+
+		<hr>
+
+		<div id="icon-container">
+		</div>
+
+		<div id="summary-container">
+		</div>
+		
+	</div>
+
+	<script>
+		function updateZip(){
+			let zip = document.getElementById("zip").value;
+			getWeather(zip);
+		}
+
+        function getWeather(zipcode) {
+            let request = new XMLHttpRequest();
+        
+            request.onreadystatechange = function() {
+                if (request.readyState == XMLHttpRequest.DONE) {   // XMLHttpRequest.DONE == 4
+                    if (request.status == 200) {
+                        let currentWeather = JSON.parse(request.responseText);
+                        console.log(currentWeather);
+                        let weatherValues = [];
+                        weatherValues.push(currentWeather.name);
+                        weatherValues.push(currentWeather.weather[0].main);
+                        weatherValues.push(currentWeather.weather[0].description);
+                        weatherValues.push(currentWeather.main.temp);
+                        console.log(weatherValues);
+                        processWeather(weatherValues);
+                    }
+                    else {
+                        alert('There was an error');
+                    }
+                }
+            };
+        console.log(zipcode);
+            request.open("GET", "http://api.openweathermap.org/data/2.5/weather?zip=" + zipcode + ",US&units=imperial&appid=[apikey]", true);
+            request.send();
+        }
+
+		function processWeather(weatherValues){
+			let city = weatherValues[0];
+			let condition = weatherValues[1];
+			let description = weatherValues[2];
+			let temp = weatherValues[3];
+
+			let fixedDescription = fixDescriptionGrammar(condition, description);
+			let roundedTemp = Math.round(temp);
+			let icon = getIcon(condition);
+			
+			addSummaryToPage(roundedTemp, fixedDescription, city);
+			addIconToPage(icon);
+		}
+
+		function fixDescriptionGrammar(condition, descrip){
+			condition = condition.toLowerCase();
+			descrip = descrip.toLowerCase();
+
+			if(
+				condition == "thunderstorm" || condition == "drizzle" ||
+				descrip == "light intensity shower rain" || descrip == "shower rain" ||
+				descrip == "heavy intensity shower rain" || descrip == "ragged shower rain" ||
+				descrip == "light shower sleet" || descrip == "shower sleet" ||
+				descrip == "light shower snow" || descrip == "shower snow" ||
+				descrip == "heavy shower snow" || descrip == "tornado" ||
+				descrip == "clear sky" || descrip == "few clouds")
+			   {
+				descrip = "a " + descrip;
+			}
+			descrip = descrip.replace("shower rain", "rain shower");
+			descrip = descrip.replace("shower sleet", "sleet shower");
+			descrip = descrip.replace("shower snow", "snow shower");
+			descrip = descrip.replace(" with ", " and ");
+			return descrip;
+		}
+
+		function getIcon(condition){
+			let icon;
+			switch( condition.toLowerCase() ){
+				case "thunderstorm":
+					icon = "fa-bolt";
+					break;
+				case "rain":
+					icon = "fa-umbrella";
+					break;
+				case "drizzle":
+					icon = "fa-umbrella";
+					break;
+				case "snow":
+					icon = "fa-snowflake-o";
+					break;
+				case "clear":
+					icon = "fa-sun-o";
+					break;
+				case "clouds":
+					icon = "fa-cloud";
+					break;
+				default:
+					icon = "fa-align-center"; //closest I can get for fog in free FA icon set
+			}
+			return icon;
+		}
+
+		function addIconToPage(icon){
+			let iconContainer = document.getElementById("icon-container");
+			iconContainer.innerHTML = '';
+
+			let iconElement = document.createElement("i");
+			iconElement.classList.add("fa", icon);
+			iconContainer.appendChild(iconElement);
+		}
+
+		function addSummaryToPage(temp, fixedCondition, city){
+			let summaryContainer = document.getElementById("summary-container");
+			let summary = "It's " + temp + "&#176;" + " with " + fixedCondition + " in " + city + ".";
+			summaryContainer.innerHTML = summary;
+		}
+
+		updateZip();
+	</script>
+
+	<!-- scripts for Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+
+</html>
